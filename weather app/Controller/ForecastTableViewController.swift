@@ -1,5 +1,5 @@
 //
-//  CityTableViewController.swift
+//  ForecastTableViewController.swift
 //  weather app
 //
 //  Created by Rizul goyal on 2020-01-17.
@@ -8,16 +8,50 @@
 
 import UIKit
 
-class CityTableViewController: UITableViewController {
+class ForecastTableViewController: UITableViewController {
     
-    var cities: [String]?
+    var cityName: String!
+    var forecastData: [ForecastData]!
+    
+    func setCity(city: String)
+    {
+        cityName = city
+        self.title = city
+        if let forecastURL = WeatherURLManager.getForecastWeatherURL(city: city)
+        {
+            let session = URLSession.shared
+            let task = session.dataTask(with: forecastURL){(data,response,error)
+                in
+                if data != nil{
+                    if let forecastData = try? JSON(data: data!)
+                    {
+                        
+                        self.loadForecast(data: forecastData)
+                      //  print(forecastData)
+                    }
+                }
+            }
+            task.resume()
+        }
+    }
+    
+    
+    func loadForecast(data: JSON)
+    {
+        forecastData = [ForecastData]()
+        let forecastList = data["list"].arrayValue
+        for json in forecastList
+        {
+            forecastData.append(ForecastData(city: cityName, data: json))
+        }
+        
+        DispatchQueue.main.async {
+            self.tableView.reloadData()
+        }
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        cities = ["Toronto", "Brampton","Sydney","London","Paris","Vancouver","Moga","Nagpur","Calgary"]
-        
-        
 
         // Uncomment the following line to preserve selection between presentations
         // self.clearsSelectionOnViewWillAppear = false
@@ -35,39 +69,21 @@ class CityTableViewController: UITableViewController {
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         // #warning Incomplete implementation, return the number of rows
-        return cities?.count ?? 0
+        return forecastData?.count ?? 0
     }
 
+    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 150
+    }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "citycell", for: indexPath) as! CityTableViewCell
-        let city = cities![indexPath.row]
+        let cell = tableView.dequeueReusableCell(withIdentifier: "forecastcell", for: indexPath) as! ForecastTableViewCell
         
-        cell.setcity(city: city)
-        
+        cell.setForecast(forecast: forecastData[indexPath.row])
 
-        
+        // Configure the cell...
+
         return cell
-    }
-    
-    
-//    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-//        if let forecastTableVC = segue.destination as? ForecastTableViewController
-//        {
-//            let cityindex = tableView.indexPath(for: sender as! UITableViewCell,
-//
-//                forecastTableVC.setCity(city: cityinde)
-//
-//            )
-//        }
-//    }
-    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-          let sb = UIStoryboard(name: "Main", bundle: nil)
-              let newVC = sb.instantiateViewController(identifier: "forecastVC") as! ForecastTableViewController
-        newVC.setCity(city: cities![indexPath.row])
-            //  loginVC.cdata = temp1.returnCustObject(custID: indexPath.row + 1)
-              
-              navigationController?.pushViewController(newVC, animated: true)
     }
     
 

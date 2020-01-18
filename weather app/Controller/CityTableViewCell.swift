@@ -10,6 +10,7 @@ import UIKit
 
 class CityTableViewCell: UITableViewCell {
 
+    @IBOutlet var imageBack: UIImageView!
     @IBOutlet var imageWeather: UIImageView!
     @IBOutlet var feelslikeLabel: UILabel!
     @IBOutlet var tempLabel: UILabel!
@@ -45,9 +46,20 @@ class CityTableViewCell: UITableViewCell {
                        
                         print(weatherdata)
                         let tempvalue = weatherdata["main"]["temp"].intValue
+                        
+                        
                         let feelvalue = weatherdata["main"]["feels_like"].intValue
 
                         DispatchQueue.main.async {
+                            
+                            if tempvalue > 2
+                            {
+                                self.imageBack.image = UIImage(named: "sun")
+                            }
+                            else
+                            {
+                                self.imageBack.image = UIImage(named: "ice")
+                            }
                                                         self.tempLabel.text = String(tempvalue)
                             self.feelslikeLabel.text = String(feelvalue)
                             
